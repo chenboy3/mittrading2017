@@ -14,6 +14,10 @@ TOKEN = 'GoXeDl_'
 token_id = 0
 past_tokens = set()
 
+order_id = []
+info = []
+
+
 
 for v in vals:
 	prices[v] = {}
@@ -30,10 +34,17 @@ def f(msg, order):
 	price = msg['market_state']['last_price']
 	update(ticker, price)
 	#printVals()
+	#cancelOrders(order)
+	global order_id
+	print('iddddd')
+	#for id in order_id:
+	#	print(id)
+	cancelOrders(order)
+	print('nere')
 	if ticker == 'EURUSD':
 		makeTrade('EURUSD', True, 100, price, order)
-	for d in dark:
-		updateDark(d, prices, order)
+	#for d in dark:
+	#	updateDark(d, prices, order)
 	'''print('portfolio')
 	for p in portfolio:
 		print (p)
@@ -124,11 +135,37 @@ def generateToken():
 	token_id += 1
 	return token
 
-#def cancelOrders():
+def cancelOrders(order):
+	global order_id
+	global info
+	print('cancellling')
+	print(len(order_id))
+	if (len(order_id) == 0):
+		print('zeo')
+		return
+	for i in range(len(order_id)):
+		print('can')
+		order.addCancel(order_id[i], info[i])
+		print('done')
+	order_id = []
+	info = []
 
+def h(msg, order):
+	global order_id
+	global info
+	#print('heeeey')
+	#print(msg['orders'])
+	#for id in order_id:
+	#	print(id)
+	for k in msg['orders']:
+		order_id.append(k['order_id'])
+		#print('iiddd')
+		#print(k['order_id'])
+		info.append(k['ticker'])
 
 
 t.onMarketUpdate = f
-t.onTrade = g
+#t.onTrade = g
+t.onAckModifyOrders = h
 
 t.run()
