@@ -29,17 +29,23 @@ def f(msg, order):
 # like weighted mid later
 	price = msg['market_state']['last_price']
 	update(ticker, price)
-	printVals()
+	#printVals()
 	if ticker == 'EURUSD':
 		makeTrade('EURUSD', True, 100, price, order)
 	for d in dark:
 		updateDark(d, prices, order)
+	'''print('portfolio')
+	for p in portfolio:
+		print (p)
+		print (portfolio[p])'''
 
 def g(msg, order):
 	for trade in msg['trades']:
+		print('YOOOO')
 		print(trade)
 
 		if 'token' in trade and trade['token'] in past_tokens:
+			print('INNN')
 			first_ticker = trade['ticker'][0:3]
 			sec_ticker = trade['ticker'][3:6]
 			quantity = trade['quantity']
@@ -106,6 +112,9 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 	token = generateToken()
 	history[ticker].append([isBuy, quantity, token, price])
 	order.addTrade(ticker, isBuy, quantity, price, token)
+	'''print('tokensss')
+	for t in past_tokens:
+		print(t)'''
 
 
 def generateToken():
@@ -114,6 +123,9 @@ def generateToken():
 	past_tokens.add(token)
 	token_id += 1
 	return token
+
+#def cancelOrders():
+
 
 
 t.onMarketUpdate = f
