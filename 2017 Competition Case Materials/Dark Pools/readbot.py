@@ -7,6 +7,8 @@ pub = ['USDCAD', 'EURUSD', 'USDCHF', 'USDJPY']
 dark = ['EURCAD', 'EURJPY', 'EURCHF', 'CHFJPY']
 prices = {}
 
+history = {} # ticker : [isBuy, quantity, token, price]
+
 TOKEN = 'GoXeDl_'
 token_id = 0
 
@@ -27,6 +29,7 @@ def f(msg, order):
 	printVals()
 	for d in dark:
 		updateDark(d, prices)
+
 
 def updateDark(ticker, prices):
 	#print('hee')
@@ -69,8 +72,14 @@ def update(ticker, price):
 	prices[b][a] = price
 	print ('ticker: ',ticker,' price: ',price)
 
-def makeTrade(ticker, isBuy, quantity, price, token):
-	
+
+def makeTrade(ticker, isBuy, quantity, price):
+	if ticker not in history:
+		history[ticker] == []
+	token = generateToken()
+	history[ticker].append([isBuy, quantity, token, price])
+	tt.TradersOrder.addTrade(ticker, isBuy, quantity, price, token)
+
 
 def generateToken():
 	token = TOKEN + str(token_id)
