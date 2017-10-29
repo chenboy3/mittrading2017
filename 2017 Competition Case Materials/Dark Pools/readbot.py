@@ -27,13 +27,14 @@ def f(msg, order):
 # like weighted mid later
 	price = msg['market_state']['last_price']
 	update(ticker, price)
-	makeTrade(ticker, True, 100, price, order)
 	printVals()
+	if ticker == 'EURUSD':
+		makeTrade('EURUSD', True, 100, price, order)
 	for d in dark:
-		updateDark(d, prices)
+		updateDark(d, prices, order)
 
 
-def updateDark(ticker, prices):
+def updateDark(ticker, prices, order):
 	#print('hee')
 	a = ticker[0:3]
 	b = ticker[3:6]
@@ -55,6 +56,11 @@ def updateDark(ticker, prices):
 						prices[a][b] = price
 						prices[b][a] = price
 						print ('yoticker: ',ticker,' price: ',price)
+						if price > 0:
+							print('yo')
+							print(ticker, price * .999)
+							makeTrade(ticker, True, 100, price * .999, order)
+							makeTrade(ticker, False, 100, price * 1.001, order)
 
 
 
