@@ -3,6 +3,8 @@ import tradersbot as tt
 t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
 
 vals = ['EUR', 'USD', 'CHF', 'JPY', 'CAD']
+pub = ['USDCAD', 'EURUSD', 'USDCHF', 'USDJPY']
+dark = ['EURCAD', 'EURJPY', 'EURCHF', 'CHFJPY']
 prices = {}
 
 TOKEN = 'GoXeDl_'
@@ -23,6 +25,32 @@ def f(msg, order):
 	price = msg['market_state']['last_price']
 	update(ticker, price)
 	printVals()
+	for d in dark:
+		updateDark(d, prices)
+
+def updateDark(ticker, prices):
+	#print('hee')
+	a = ticker[0:3]
+	b = ticker[3:6]
+	for c in pub:
+		for d in pub:
+			c1 = c[0:3]
+			c2 = c[3:6]
+			d1 = d[0:3]
+			d2 = d[3:6]
+			#print(c1, d2)
+			if c1 == d2:
+				#print('a')
+				#print(c2, b)
+				if c2 == b:
+					#print('b')
+					if d1 == a:
+						#print('c')
+						price = prices[c1][c2] * prices[d1][d2]
+						prices[a][b] = price
+						prices[b][a] = price
+						print ('yoticker: ',ticker,' price: ',price)
+
 
 
 def printVals():
