@@ -5,27 +5,31 @@ t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
 vals = ['EUR', 'USD', 'CHF', 'JPY', 'CAD']
 prices = {}
 
+TOKEN = 'GoXeDl_'
+token_id = 0
+
 
 for v in vals:
 	prices[v] = {}
 	for vv in vals:
 		prices[v][vv] = 0.0
 
+
 def f(msg, order):
-	#get the market data and update
+	# get the market data and update
 	ticker = msg['market_state']['ticker']
-	#use last as price for now, can use something more sophisticated
-	#like weighted mid later
+# use last as price for now, can use something more sophisticated
+# like weighted mid later
 	price = msg['market_state']['last_price']
 	update(ticker, price)
 	printVals()
+
 
 def printVals():
 	print('---------')
 	for v in vals:
 		for vv in vals:
 			print(v, vv, prices[v][vv])
-
 
 
 def update(ticker, price):
@@ -37,6 +41,13 @@ def update(ticker, price):
 	prices[b][a] = price
 	print ('ticker: ',ticker,' price: ',price)
 
+def makeTrade(ticker, isBuy, quantity, price, token):
+	
+
+def generateToken():
+	token = TOKEN + str(token_id)
+	token_id += 1
+	return token
 
 t.onMarketUpdate = f
 
