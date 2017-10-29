@@ -27,7 +27,7 @@ def f(msg, order):
 # like weighted mid later
 	price = msg['market_state']['last_price']
 	update(ticker, price)
-	makeTrade(ticker, True, 100, price)
+	makeTrade(ticker, True, 100, price, order)
 	printVals()
 	for d in dark:
 		updateDark(d, prices)
@@ -75,13 +75,13 @@ def update(ticker, price):
 	print ('ticker: ',ticker,' price: ',price)
 
 
-def makeTrade(ticker, isBuy, quantity, price):
+def makeTrade(ticker, isBuy, quantity, price, order):
 	global token_id
 	if ticker not in history:
 		history[ticker] = []
 	token = generateToken()
 	history[ticker].append([isBuy, quantity, token, price])
-	tt.TradersOrder.addTrade(ticker, isBuy, quantity, price, token)
+	order.addTrade(ticker, isBuy, quantity, price, token)
 
 
 def generateToken():
