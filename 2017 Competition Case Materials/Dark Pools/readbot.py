@@ -8,9 +8,11 @@ dark = ['EURCAD', 'EURJPY', 'EURCHF', 'CHFJPY']
 prices = {}
 
 history = {} # ticker : [isBuy, quantity, token, price]
+portfolio = {'USD': 100000.0, 'EUR': 0.0, 'CHF': 0.0, 'JPY': 0.0, 'CAD': 0.0}
 
 TOKEN = 'GoXeDl_'
 token_id = 0
+past_tokens = set()
 
 
 for v in vals:
@@ -23,7 +25,7 @@ for v in vals:
 def f(msg, order):
 	# get the market data and update
 	ticker = msg['market_state']['ticker']
-# use last as price for now, can use something more sophisticated
+	# use last as price for now, can use something more sophisticated
 # like weighted mid later
 	price = msg['market_state']['last_price']
 	update(ticker, price)
@@ -33,6 +35,22 @@ def f(msg, order):
 	for d in dark:
 		updateDark(d, prices, order)
 
+def g(msg, order):
+	for trade in msg['trades']:
+		print(trade)
+
+		if 'token' in trade and trade['token'] in past_tokens:
+			first_ticker = trade['ticker'][0:3]
+			sec_ticker = trade['ticker'][3:6]
+			quantity = trade['quantity']
+			price = trade['price']
+			isBuy = trade['buy']
+			if isBuy:
+				portfolio[first_ticker] += quantity
+				portfolio[second_ticker] -= quantity * price
+			else:
+				portfolio[first_ticker] -= quantity * price
+				portfolio[second_ticker] += quantity
 
 def updateDark(ticker, prices, order):
 	#print('hee')
@@ -93,9 +111,12 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 def generateToken():
 	global token_id
 	token = TOKEN + str(token_id)
+	past_tokens.add(token)
 	token_id += 1
 	return token
 
+
 t.onMarketUpdate = f
+t.onTrade = g
 
 t.run()
