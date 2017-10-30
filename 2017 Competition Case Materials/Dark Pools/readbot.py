@@ -1,4 +1,5 @@
 import tradersbot as tt
+import time
 
 t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
 
@@ -16,6 +17,7 @@ past_tokens = set()
 
 order_id = []
 info = []
+last_trade = 0.0
 
 
 
@@ -27,6 +29,7 @@ for v in vals:
 
 
 def f(msg, order):
+	global last_trade
 	# get the market data and update
 	ticker = msg['market_state']['ticker']
 	# use last as price for now, can use something more sophisticated
@@ -35,16 +38,25 @@ def f(msg, order):
 	update(ticker, price)
 	#printVals()
 	#cancelOrders(order)
-	print('iddddd')
 	#for id in order_id:
 	#	print(id)
-	cancelOrders(order)
-	print('nere')
 	#if ticker == 'EURCAD':
 	#makeTrade('EURUSD', True, 100, price, order)
 	#makeTrade('EURCAD', True, 100, price, order)
 	for d in dark:
 		updateDark(d, prices, order)
+	if (time.time() - last_trade > 1):
+		print('trade')
+		last_trade = time.time()
+		cancelOrders(order)
+		for d in dark:
+			price = prices[d[0:3]][d[3:6]]
+			if price > 0.01:
+				print('buyz' ,d, price * .99)
+				print('sellz',d, price * 1.01)
+				makeTrade(d, True, 10, price * .99, order)
+				makeTrade(d, False, 10, price * 1.01, order)
+
 	'''print('portfolio')
 	for p in portfolio:
 		print (p)
@@ -91,11 +103,12 @@ def updateDark(ticker, prices, order):
 						prices[a][b] = price
 						prices[b][a] = price
 						print ('yoticker: ',ticker,' price: ',price)
-						if price > 0:
+						'''if price > 0:
 							print('yo')
-							print(ticker, price * .999)
+							print(ticker, price * .99)
+							if (time.time() - last)
 							makeTrade(ticker, True, 100, price * .99, order)
-							makeTrade(ticker, False, 100, price * 1.01, order)
+							makeTrade(ticker, False, 100, price * 1.01, order)'''
 
 
 
