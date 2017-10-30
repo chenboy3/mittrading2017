@@ -35,7 +35,6 @@ def f(msg, order):
 	update(ticker, price)
 	#printVals()
 	#cancelOrders(order)
-	global order_id
 	print('iddddd')
 	#for id in order_id:
 	#	print(id)
@@ -145,23 +144,22 @@ def cancelOrders(order):
 		return
 	for i in range(len(order_id)):
 		print('can')
-		order.addCancel(order_id[i], info[i])
+		order.addCancel(info[i], order_id[i])
 		print('done')
 	order_id = []
 	info = []
 
 def h(msg, order):
-	global order_id
-	global info
 	#print('heeeey')
 	#print(msg['orders'])
 	#for id in order_id:
 	#	print(id)
-	for k in msg['orders']:
-		order_id.append(k['order_id'])
-		#print('iiddd')
-		#print(k['order_id'])
-		info.append(k['ticker'])
+	if 'orders' in msg:
+		for k in msg['orders']:
+			order_id.append(k['order_id'])
+			#print('iiddd')
+			#print(k['order_id'])
+			info.append(k['ticker'])
 
 
 t.onMarketUpdate = f
