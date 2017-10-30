@@ -40,10 +40,11 @@ def f(msg, order):
 	#	print(id)
 	cancelOrders(order)
 	print('nere')
-	if ticker == 'EURUSD':
-		makeTrade('EURUSD', True, 100, price, order)
-	#for d in dark:
-	#	updateDark(d, prices, order)
+	#if ticker == 'EURCAD':
+	#makeTrade('EURUSD', True, 100, price, order)
+	#makeTrade('EURCAD', True, 100, price, order)
+	for d in dark:
+		updateDark(d, prices, order)
 	'''print('portfolio')
 	for p in portfolio:
 		print (p)
@@ -93,8 +94,8 @@ def updateDark(ticker, prices, order):
 						if price > 0:
 							print('yo')
 							print(ticker, price * .999)
-							makeTrade(ticker, True, 100, price * .999, order)
-							makeTrade(ticker, False, 100, price * 1.001, order)
+							makeTrade(ticker, True, 100, price * .99, order)
+							makeTrade(ticker, False, 100, price * 1.01, order)
 
 
 
