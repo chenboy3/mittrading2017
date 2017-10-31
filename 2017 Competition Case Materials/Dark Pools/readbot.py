@@ -52,10 +52,11 @@ def f(msg, order):
 		for d in dark:
 			price = prices[d[0:3]][d[3:6]]
 			if price > 0.01:
-				print('buyz' ,d, price * .99)
-				print('sellz',d, price * 1.01)
-				makeTrade(d, True, 10, price * .99, order)
-				makeTrade(d, False, 10, price * 1.01, order)
+				print('buyz' ,d, price * .995)
+				print('sellz',d, price * 1.005)
+				#makeTrade(d, True, 10, price * .999 - .01 + 199, order)
+				makeTrade(d, True, 10, price * .95 - .01 , order)
+				makeTrade(d, False, 10, price * 1.05 + .01, order)
 
 	'''print('portfolio')
 	for p in portfolio:
