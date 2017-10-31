@@ -55,7 +55,7 @@ def f(msg, order):
 				print('buyz' ,d, price * .995)
 				print('sellz',d, price * 1.005)
 				#makeTrade(d, True, 10, price * .999 - .01 + 199, order)
-				makeTrade(d, True, 10, price * .95 - .01 , order)
+				makeTrade(d, True, 10, price * .95 - .01, order)
 				makeTrade(d, False, 10, price * 1.05 + .01, order)
 
 	'''print('portfolio')
@@ -163,6 +163,16 @@ def cancelOrders(order):
 		print('done')
 	order_id = []
 	info = []
+
+def liquidateToUsd(order):
+	if portfolio['EUR'] != 0.0:
+		makeTrade('EURUSD', False, quantity * 1.0 / prices['USD']['EUR'], prices['USD']['EUR'], order)
+	if portfolio['CAD'] != 0.0:
+		makeTrade('USDCAD', True, quantity * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
+	if portfolio['CHF'] != 0.0:
+		makeTrade('USDCHF', True, quantity * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
+	if portfolio['JPY'] != 0.0:
+		makeTrade('USDJPY', True, quantity * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
 
 def h(msg, order):
 	#print('heeeey')
