@@ -1,11 +1,15 @@
-import tradersbot as tradersbot
+import tradersbot as tt
+import time
 import numpy
 import pickle as pkl
 import random
 import string
+import sys
 
-t = tradersbot.TradersBot(host='127.0.0.1', id='darkbot0', password='darkbot0')
-tradelist = pkl.load(open('./utils/trade.pkl','r'))
+i = int(sys.argv[1])
+time.sleep(5)
+t = tt.TradersBot(host='127.0.0.1', id='darkbot0', password='darkbot0')
+tradelist = pkl.load(open('./utils/pkls/trade{0}.pkl'.format(i),'r'))
 tick = 0
 ticks = {}
 tokens = {}
@@ -44,7 +48,6 @@ def g(msg, order):
     global tick
     global ticks
     global ids
-    print(msg)
     if 'orders' in msg:
         for trade in msg['orders']:
             order_id = trade['order_id']

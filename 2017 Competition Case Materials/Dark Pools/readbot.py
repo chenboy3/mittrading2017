@@ -64,7 +64,7 @@ def f(msg, order):
 		print (portfolio[p])'''
 
 def g(msg, order):
-	for trade in msg['trades']:
+    '''    	for trade in msg['trades']:
 		print('YOOOO')
 		print(trade)
 
@@ -81,7 +81,9 @@ def g(msg, order):
 			else:
 				portfolio[first_ticker] -= quantity * price
 				portfolio[second_ticker] += quantity
-
+    '''
+    print ('hey')
+    print msg
 def updateDark(ticker, prices, order):
 	#print('hee')
 	a = ticker[0:3]
@@ -188,7 +190,7 @@ def h(msg, order):
 
 
 t.onMarketUpdate = f
-#t.onTrade = g
+t.onTrade = g
 t.onAckModifyOrders = h
 
 t.run()
