@@ -21,6 +21,7 @@ last_trade = 0.0
 
 
 
+
 for v in vals:
 	prices[v] = {}
 	for vv in vals:
@@ -64,7 +65,7 @@ def f(msg, order):
 		print (portfolio[p])'''
 
 def g(msg, order):
-    '''    	for trade in msg['trades']:
+    for trade in msg['trades']:
 		print('YOOOO')
 		print(trade)
 
@@ -81,7 +82,7 @@ def g(msg, order):
 			else:
 				portfolio[first_ticker] -= quantity * price
 				portfolio[second_ticker] += quantity
-    '''
+
     print ('hey')
     print msg
 def updateDark(ticker, prices, order):
