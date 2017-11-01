@@ -8,13 +8,10 @@ pub = ['USDCAD', 'EURUSD', 'USDCHF', 'USDJPY']
 dark = ['EURCAD', 'EURJPY', 'EURCHF', 'CHFJPY']
 prices = {}
 
-history = {} # ticker : [isBuy, quantity, token, price]
+history = {} # ticker : [isBuy, quantity, price]
 portfolio = {'USD': 100000.0, 'EUR': 0.0, 'CHF': 0.0, 'JPY': 0.0, 'CAD': 0.0}
 
-TOKEN = 'GoXeDl_'
-token_id = 0
-past_tokens = set()
-
+trade_ids = set()
 order_id = []
 info = []
 last_trade = 0.0
@@ -61,6 +58,7 @@ def f(msg, order):
                                 makeTrade(d, True, 10, price * .95 - .01, order)
                                 makeTrade(d, False, 10, price * 1.05 + .01, order)
         if elapsed > 15:
+            print("LIQUIDATING")
             liquidateToUsd(order)
         '''print('portfolio')
         for p in portfolio:
@@ -69,22 +67,22 @@ def f(msg, order):
 
 def g(msg, order):
     for trade in msg['trades']:
-                print('YOOOO')
-                print(trade)
+        print('YOOOO')
+        print(trade)
 
-                if 'token' in trade and trade['token'] in past_tokens:
-                        print('INNN')
-                        first_ticker = trade['ticker'][0:3]
-                        sec_ticker = trade['ticker'][3:6]
-                        quantity = trade['quantity']
-                        price = trade['price']
-                        isBuy = trade['buy']
-                        if isBuy:
-                                portfolio[first_ticker] += quantity
-                                portfolio[second_ticker] -= quantity * price
-                        else:
-                                portfolio[first_ticker] -= quantity * price
-                                portfolio[second_ticker] += quantity
+        if trade['buy_order_id'] in trade_ids or trade['sell_order_id'] in trade_ids:
+            print('INNN')
+            first_ticker = trade['ticker'][0:3]
+            sec_ticker = trade['ticker'][3:6]
+            quantity = trade['quantity']
+            price = trade['price']
+            isBuy = trade['buy']
+            if trade['buy_order_id'] in trade_ids:
+                portfolio[first_ticker] += quantity
+                portfolio[sec_ticker] -= quantity * price
+            else:
+                portfolio[first_ticker] -= quantity * price
+                portfolio[sec_ticker] += quantity
 
     print ('hey')
     print msg
@@ -137,23 +135,11 @@ def update(ticker, price):
 
 
 def makeTrade(ticker, isBuy, quantity, price, order):
-        global token_id
         if ticker not in history:
                 history[ticker] = []
-        token = generateToken()
-        history[ticker].append([isBuy, quantity, token, price])
-        order.addTrade(ticker, isBuy, quantity, price, token)
-        '''print('tokensss')
-        for t in past_tokens:
-                print(t)'''
+        history[ticker].append([isBuy, quantity, price])
+        order.addTrade(ticker, isBuy, quantity, price)
 
-
-def generateToken():
-        global token_id
-        token = TOKEN + str(token_id)
-        past_tokens.add(token)
-        token_id += 1
-        return token
 
 def cancelOrders(order):
         global order_id
@@ -172,14 +158,15 @@ def cancelOrders(order):
 
 def liquidateToUsd(order):
         print portfolio
+        # not working, maybe if something's negative
         if portfolio['EUR'] != 0.0:
-                makeTrade('EURUSD', False, quantity * 1.0 / prices['USD']['EUR'], prices['USD']['EUR'], order)
+                makeTrade('EURUSD', False, portfolio['EUR'] * 1.0 / prices['USD']['EUR'], prices['USD']['EUR'], order)
         if portfolio['CAD'] != 0.0:
-                makeTrade('USDCAD', True, quantity * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
+                makeTrade('USDCAD', True, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
         if portfolio['CHF'] != 0.0:
-                makeTrade('USDCHF', True, quantity * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
+                makeTrade('USDCHF', True, portfolio['CHF'] * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
         if portfolio['JPY'] != 0.0:
-                makeTrade('USDJPY', True, quantity * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
+                makeTrade('USDJPY', True, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
 
 def h(msg, order):
         #print('heeeey')
@@ -188,6 +175,7 @@ def h(msg, order):
         #       print(id)
         if 'orders' in msg:
                 for k in msg['orders']:
+                        trade_ids.add(k['order_id'])
                         order_id.append(k['order_id'])
                         #print('iiddd')
                         #print(k['order_id'])
