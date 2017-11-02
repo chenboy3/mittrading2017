@@ -45,7 +45,7 @@ def f(msg, order):
                 updateDark(d, prices, order)
         elapsed = time.time() - last
         print elapsed
-        if (time.time() - last_trade > 1 and elapsed < 15):
+        if (time.time() - last_trade > 1 and elapsed < 5):
                 print('trade')
                 last_trade = time.time()
                 cancelOrders(order)
@@ -57,7 +57,7 @@ def f(msg, order):
                                 #makeTrade(d, True, 10, price * .999 - .01 + 199, order)
                                 makeTrade(d, True, 10, price * .95 - .01, order)
                                 makeTrade(d, False, 10, price * 1.05 + .01, order)
-        if elapsed > 15:
+        if elapsed > 5:
             print("LIQUIDATING")
             liquidateToUsd(order)
             print("post liquidation")
@@ -158,13 +158,15 @@ def cancelOrders(order):
         info = []
 
 def liquidateToUsd(order):
+        print('STAAAART')
         print(portfolio)
         # not working, maybe if something's negative
         if portfolio['EUR'] != 0.0:
             if portfolio['EUR'] < 0.0:
-                makeTrade('EURUSD', True, portfolio['EUR'] * 1.0 / prices['EUR']['USD'], prices['EUR']['USD'], order)
+                makeTrade('EURUSD', True, int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']), prices['EUR']['USD'], order)
             else:
-                makeTrade('EURUSD', False, portfolio['EUR'] * 1.0 / prices['EUR']['USD'], prices['EUR']['USD'], order)
+                makeTrade('EURUSD', False, int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']), prices['EUR']['USD'], order)
+        return
         if portfolio['CAD'] != 0.0:
             if portfolio['CAD'] < 0.0:
                 makeTrade('USDCAD', True, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
@@ -180,7 +182,7 @@ def liquidateToUsd(order):
                 makeTrade('USDJPY', True, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
             else:
                 makeTrade('USDJPY', False, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
-
+        print('EEEENDDD')
 def h(msg, order):
         #print('heeeey')
         #print(msg['orders'])
