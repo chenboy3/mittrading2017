@@ -32,7 +32,10 @@ def f(msg, order):
         ticker = msg['market_state']['ticker']
         # use last as price for now, can use something more sophisticated
 # like weighted mid later
-        price = msg['market_state']['last_price']
+        if 'ask_price' in msg['market_state'] and 'bid_price' in msg['market_state']:
+            price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
+        else:
+            price = msg['market_state']['last_price']
         update(ticker, price)
         #printVals()
         #cancelOrders(order)
@@ -45,7 +48,7 @@ def f(msg, order):
                 updateDark(d, prices, order)
         elapsed = time.time() - last
         print elapsed
-        if (time.time() - last_trade > 1 and elapsed < 5):
+        if time.time() - last_trade > 1:
                 print('trade')
                 last_trade = time.time()
                 cancelOrders(order)
@@ -55,16 +58,14 @@ def f(msg, order):
                                 print('buyz' ,d, price * .995)
                                 print('sellz',d, price * 1.005)
                                 #makeTrade(d, True, 10, price * .999 - .01 + 199, order)
-                                makeTrade(d, True, 10, price * .95 - .01, order)
-                                makeTrade(d, False, 10, price * 1.05 + .01, order)
-        if elapsed > 5:
+                                makeTrade(d, True, 1000, price * .95 - .01, order)
+                                makeTrade(d, False, 1000, price * 1.05 + .01, order)
+        if elapsed > 10:
             print("LIQUIDATING")
             liquidateToUsd(order)
             print("post liquidation")
-        '''print('portfolio')
-        for p in portfolio:
-                print (p)
-                print (portfolio[p])'''
+            elapsed = time.time()
+
 
 def g(msg, order):
     for trade in msg['trades']:
@@ -162,26 +163,25 @@ def liquidateToUsd(order):
         print(portfolio)
         # not working, maybe if something's negative
         if portfolio['EUR'] != 0.0:
-            if portfolio['EUR'] < 0.0:
-                makeTrade('EURUSD', True, int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']), prices['EUR']['USD'], order)
-            else:
-                makeTrade('EURUSD', False, int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']), prices['EUR']['USD'], order)
-        return
+            quantity = abs(int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']))
+            while quantity > 0:
+                makeTrade('EURUSD', portfolio['EUR'] < 0.0, min(1000, quantity), prices['EUR']['USD'], order)
+                quantity -= min(1000, quantity)
         if portfolio['CAD'] != 0.0:
-            if portfolio['CAD'] < 0.0:
-                makeTrade('USDCAD', True, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
-            else:
-                makeTrade('USDCAD', False, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
+            quantity = abs(int(portfolio['CAD'] * 1.0 / prices['USD']['CAD']))
+            while quantity > 0:
+                makeTrade('USDCAD', portfolio['CAD'] < 0.0, min(1000, quantity), prices['USD']['CAD'], order)
+                quantity -= min(1000, quantity)
         if portfolio['CHF'] != 0.0:
-            if portfolio['CHF'] < 0.0:
-                makeTrade('USDCHF', True, portfolio['CHF'] * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
-            else:
-                makeTrade('USDCHF', False, portfolio['CHF'] * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
+            quantity = abs(int(portfolio['CHF'] * 1.0 / prices['USD']['CHF']))
+            while quantity > 0:
+                makeTrade('USDCHF', portfolio['CHF'] < 0.0, min(1000, quantity), prices['USD']['CHF'], order)
+                quantity -= min(1000, quantity)
         if portfolio['JPY'] != 0.0:
-            if portfolio['JPY'] < 0.0:
-                makeTrade('USDJPY', True, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
-            else:
-                makeTrade('USDJPY', False, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
+            quantity = abs(int(portfolio['JPY'] * 1.0 / prices['USD']['JPY']))
+            while quantity > 0:
+                makeTrade('USDJPY', portfolio['JPY'] < 0.0, min(1000, quantity), prices['USD']['JPY'], order)
+                quantity -= min(1000, quantity)
         print('EEEENDDD')
 def h(msg, order):
         #print('heeeey')
