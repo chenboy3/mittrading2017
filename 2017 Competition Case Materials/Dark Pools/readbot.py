@@ -60,6 +60,7 @@ def f(msg, order):
         if elapsed > 15:
             print("LIQUIDATING")
             liquidateToUsd(order)
+            print("post liquidation")
         '''print('portfolio')
         for p in portfolio:
                 print (p)
@@ -157,16 +158,28 @@ def cancelOrders(order):
         info = []
 
 def liquidateToUsd(order):
-        print portfolio
+        print(portfolio)
         # not working, maybe if something's negative
         if portfolio['EUR'] != 0.0:
-                makeTrade('EURUSD', False, portfolio['EUR'] * 1.0 / prices['USD']['EUR'], prices['USD']['EUR'], order)
+            if portfolio['EUR'] < 0.0:
+                makeTrade('EURUSD', True, portfolio['EUR'] * 1.0 / prices['EUR']['USD'], prices['EUR']['USD'], order)
+            else:
+                makeTrade('EURUSD', False, portfolio['EUR'] * 1.0 / prices['EUR']['USD'], prices['EUR']['USD'], order)
         if portfolio['CAD'] != 0.0:
+            if portfolio['CAD'] < 0.0:
                 makeTrade('USDCAD', True, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
+            else:
+                makeTrade('USDCAD', False, portfolio['CAD'] * 1.0 / prices['USD']['CAD'], prices['USD']['CAD'], order)
         if portfolio['CHF'] != 0.0:
+            if portfolio['CHF'] < 0.0:
                 makeTrade('USDCHF', True, portfolio['CHF'] * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
+            else:
+                makeTrade('USDCHF', False, portfolio['CHF'] * 1.0 / prices['USD']['CHF'], prices['USD']['CHF'], order)
         if portfolio['JPY'] != 0.0:
+            if portfolio['JPY'] < 0.0:
                 makeTrade('USDJPY', True, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
+            else:
+                makeTrade('USDJPY', False, portfolio['JPY'] * 1.0 / prices['USD']['JPY'], prices['USD']['JPY'], order)
 
 def h(msg, order):
         #print('heeeey')
