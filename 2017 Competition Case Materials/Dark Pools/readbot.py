@@ -28,6 +28,7 @@ for v in vals:
 
 def f(msg, order):
         global last_trade
+        global last
         # get the market data and update
         ticker = msg['market_state']['ticker']
         # use last as price for now, can use something more sophisticated
@@ -48,7 +49,7 @@ def f(msg, order):
                 updateDark(d, prices, order)
         elapsed = time.time() - last
         print elapsed
-        if time.time() - last_trade > 1:
+        if time.time() - last_trade > 1 and elapsed < 10:
                 print('trade')
                 last_trade = time.time()
                 cancelOrders(order)
@@ -64,7 +65,7 @@ def f(msg, order):
             print("LIQUIDATING")
             liquidateToUsd(order)
             print("post liquidation")
-            elapsed = time.time()
+            #last = time.time()
 
 
 def g(msg, order):
