@@ -58,8 +58,8 @@ def f(msg, order):
                                 print('buyz' ,d, price * .995)
                                 print('sellz',d, price * 1.005)
                                 #makeTrade(d, True, 10, price * .999 - .01 + 199, order)
-                                makeTrade(d, True, 1000, price * .95 - .01, order)
-                                makeTrade(d, False, 1000, price * 1.05 + .01, order)
+                                makeTrade(d, True, 1000, price * .92 - .01, order)
+                                makeTrade(d, False, 1000, price * 1.08 + .01, order)
         if elapsed > 10:
             print("LIQUIDATING")
             #liquidateToUsd(order)
