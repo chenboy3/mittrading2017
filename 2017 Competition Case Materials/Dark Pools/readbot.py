@@ -49,7 +49,7 @@ def f(msg, order):
                 updateDark(d, prices, order)
         elapsed = time.time() - last
         print elapsed
-        if time.time() - last_trade > 1 and elapsed < 3:
+        if time.time() - last_trade > 1:# and elapsed < 10:
                 print('trade')
                 last_trade = time.time()
                 for d in dark:
@@ -60,16 +60,16 @@ def f(msg, order):
                                 #makeTrade(d, True, 10, price * .999 - .01 + 199, order)
                                 makeTrade(d, True, 1000, price * .95 - .01, order)
                                 makeTrade(d, False, 1000, price * 1.05 + .01, order)
-        if elapsed > 3:
+        if elapsed > 10:
             print("LIQUIDATING")
-            liquidateToUsd(order)
+            #liquidateToUsd(order)
             print("post liquidation")
-            #last = time.time()
+#            last = time.time()
 
         cancelOrders(order)
 
 def g(msg, order):
-    for trade in msg['trades']:
+    '''for trade in msg['trades']:
         print('YOOOO')
         print(trade)
 
@@ -89,7 +89,7 @@ def g(msg, order):
                 portfolio[sec_ticker] += quantity
 
     print ('hey')
-    print msg
+    print msg'''
 def updateDark(ticker, prices, order):
         #print('hee')
         a = ticker[0:3]
@@ -167,11 +167,13 @@ def liquidateToUsd(order):
         if portfolio['EUR'] != 0.0:
             quantity = abs(int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']))
             while quantity > 0:
+                print quantity, 'EUROOOOO'
                 makeTrade('EURUSD', portfolio['EUR'] < 0.0, min(1000, quantity), prices['EUR']['USD'], order)
                 quantity -= min(1000, quantity)
         if portfolio['CAD'] != 0.0:
             quantity = abs(int(portfolio['CAD'] * 1.0 / prices['USD']['CAD']))
             while quantity > 0:
+                print quantity, 'CADOOOOO'
                 makeTrade('USDCAD', portfolio['CAD'] > 0.0, min(1000, quantity), prices['USD']['CAD'], order)
                 quantity -= min(1000, quantity)
         if portfolio['CHF'] != 0.0:
@@ -198,9 +200,22 @@ def h(msg, order):
                         #print(k['order_id'])
                         info.append(k['ticker'])
 
-
+def i(msg, order):
+    print('IIIIIIIIIIIIIII')
+    cancelOrders(order)
+    print(msg)
+    for k in msg:
+        print k
+    print(msg['trader_state'])
+    for k in msg['trader_state']:
+        print k 
+    state = msg['trader_state']
+    for c in state['cash']:
+        print c
+        portfolio[c] = state['cash'][c]
+    liquidateToUsd(order)
 t.onMarketUpdate = f
 t.onTrade = g
 t.onAckModifyOrders = h
-
+t.onTraderUpdate = i
 t.run()
