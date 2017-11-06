@@ -26,7 +26,7 @@ def f(msg, order):
         price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
     else:
         price = msg['market_state']['last_price']
-                #this is a put
+    #this is a put
     if direction == 'P':
         puts[val] = price
     elif direction == 'C':
@@ -36,16 +36,31 @@ def f(msg, order):
         print 'TIIIICK', ticker
     else:
         print 'WEEEEEEIRD'
+    # do we still want to keep all the old puts/calls?
     print puts, calls
     print 'SPOOOT', spot
     vals()
 
 def vals():
     time_left = 450 - (time.time() - start)
+    prev = None
     for call in calls:
-        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call])
+        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call], volatility = prev)
         vols[call] = val.impliedVolatility
+        # not sure if this is the correct way to calculate implied volatility
+        prev = val.impliedVolatility
         print vols[call]
+        # greeks
+        call_delta, vega, gamma = val.callDelta, val.vega, val.gamma
+        print(call_delta, vega, gamma)
+    prev = None
+    for put in puts:
+        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put], volatility = prev )
+        vols[put] = val.impliedVolatility
+        prev = val.impliedVolatility
+        print vols[put]
+        call_delta, vega, gamma = val.callDelta, val.vega, val.gamma
+        print(call_delta, vega, gamma)
 
 
 
