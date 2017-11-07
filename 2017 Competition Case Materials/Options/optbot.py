@@ -110,6 +110,43 @@ def h(msg, order):
                         order_id.append(k['order_id'])
                         info.append(k['ticker'])
 
+def i(msg, order):
+
+    status = msg['trader_state']['positions']
+    delta, vega = calcNetDeltaVega(status)
+    for ticker in calls:
+        if call_greeks[ticker][1] <= abs(delta):
+            if delta > 0:
+                makeTrade('T' + ticker + 'C', False, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
+            else:
+                makeTrade('T' + ticker + 'C', True, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
+            break
+
+    '''
+    get net delta and vega from our positions
+
+    hedge delta and vega
+
+    find stocks to buy/sell such that delta/vega approach 0
+
+    delta of 100, stock has delta of 1
+
+    try to just do delta
+
+
+    '''
+
+def calcNetDeltaVega(positions):
+    net_delta = 0
+    net_vega = 0
+    for ticker in positions:
+        if ticker[-1] == 'P':
+            net_delta += put_greeks[ticker[1:-1]][1]
+            net_vega += put_greeks[ticker[1:-1]][2]
+        else:
+            net_delta += call_greeks[ticker[1:-1]][1]
+            net_vega += call_greeks[ticker[1:-1]][2]
+    return net_delta, net_vega
 
 def smileTrade(order):
     index = 80
@@ -165,5 +202,5 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 t.onMarketUpdate = f
 #t.onTrade = g
 t.onAckModifyOrders = h
-#t.onTraderUpdate = i
+t.onTraderUpdate = i
 t.run()
