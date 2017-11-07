@@ -11,7 +11,6 @@ prices = {}
 history = {} # ticker : [isBuy, quantity, price]
 portfolio = {'USD': 100000.0, 'EUR': 0.0, 'CHF': 0.0, 'JPY': 0.0, 'CAD': 0.0}
 
-trade_ids = set()
 order_id = []
 info = []
 last_trade = 0.0
@@ -194,7 +193,6 @@ def h(msg, order):
         #       print(id)
         if 'orders' in msg:
                 for k in msg['orders']:
-                        trade_ids.add(k['order_id'])
                         order_id.append(k['order_id'])
                         #print('iiddd')
                         #print(k['order_id'])
@@ -208,7 +206,7 @@ def i(msg, order):
         print k
     print(msg['trader_state'])
     for k in msg['trader_state']:
-        print k 
+        print k
     state = msg['trader_state']
     for c in state['cash']:
         print c

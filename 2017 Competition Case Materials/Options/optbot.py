@@ -11,6 +11,9 @@ vols = {}
 greeks = {}
 start = time.time()
 
+order_id = []
+info = []
+
 
 def f(msg, order):
     global spot
@@ -42,6 +45,8 @@ def f(msg, order):
     print 'SPOOOT', spot
     vals()
 
+    cancelOrders(order)
+
 def vals():
     time_left = 450 - (time.time() - start)
     prev = None
@@ -61,12 +66,31 @@ def vals():
         print vols[put]
         greeks[put] = val.putDelta, val.vega, val.gamma)
 
+def cancelOrders(order):
+        global order_id
+        global info
+        print('cancellling')
+        print(len(order_id))
+        if (len(order_id) == 0):
+                print('zeo')
+                return
+        for i in range(len(order_id)):
+                print('can')
+                order.addCancel(info[i], order_id[i])
+                print('done')
+        order_id = []
+        info = []
 
-
-
+def h(msg, order):
+        if 'orders' in msg:
+                for k in msg['orders']:
+                        order_id.append(k['order_id'])
+                        #print('iiddd')
+                        #print(k['order_id'])
+                        info.append(k['ticker'])
 
 t.onMarketUpdate = f
 #t.onTrade = g
-#t.onAckModifyOrders = h
+t.onAckModifyOrders = h
 #t.onTraderUpdate = i
 t.run()
