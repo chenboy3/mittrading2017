@@ -113,17 +113,23 @@ def smileTrade(order):
     print call_greeks
     print 'doodoooododoo'
     for i in range(index, len(ll) - 1):
+        print i
         #if the volatility
         print call_greeks[ll[i]][0]
         if ( call_greeks[ll[i+1]][0] < call_greeks[ll[i]][0]):
-            ticker = "T"+str(i+1)+"C"
-            makeTrade(ticker, True, 1000, calls[ll[i+1]]*1.05, order)
+            ticker = "T"+str(ll[i+1])+"C"
+            print('iiiiiiiiiin')
+            print ticker
+            makeTrade(ticker, True, 1, calls[ll[i+1]]*1.05, order)
     for i in range(index, 1):
+        print i
         #if the volatility
         print call_greeks[ll[i]][0]
         if ( call_greeks[ll[i-1]][0] < call_greeks[ll[i]][0]):
-            ticker = "T"+str(i-1)+"C"
-            makeTrade(ticker, True, 1000, calls[ll[i-1]]*1.05, order)
+            ticker = "T"+str(ll[i-1])+"C"
+            print('iiiiiiiiiin')
+            print ticker
+            makeTrade(ticker, True, 1, calls[ll[i-1]]*1.05, order)
     print 'dooooon'
     for i in range(len(ll)):
         print ll[i]
