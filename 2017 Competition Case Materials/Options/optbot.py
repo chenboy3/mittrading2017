@@ -8,6 +8,7 @@ spot = 100
 puts = {}
 calls = {}
 vols = {}
+greeks = {}
 start = time.time()
 
 
@@ -51,16 +52,14 @@ def vals():
         prev = val.impliedVolatility
         print vols[call]
         # greeks
-        call_delta, vega, gamma = val.callDelta, val.vega, val.gamma
-        print(call_delta, vega, gamma)
+        greeks[call] = (val.callDelta, val.vega, val.gamma)
     prev = None
     for put in puts:
         val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put], volatility = prev )
         vols[put] = val.impliedVolatility
         prev = val.impliedVolatility
         print vols[put]
-        call_delta, vega, gamma = val.callDelta, val.vega, val.gamma
-        print(call_delta, vega, gamma)
+        greeks[put] = val.putDelta, val.vega, val.gamma)
 
 
 
