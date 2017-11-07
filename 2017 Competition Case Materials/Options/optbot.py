@@ -64,7 +64,7 @@ def vals():
         vols[put] = val.impliedVolatility
         prev = val.impliedVolatility
         print vols[put]
-        greeks[put] = val.putDelta, val.vega, val.gamma)
+        greeks[put] = (val.putDelta, val.vega, val.gamma)
 
 def cancelOrders(order):
         global order_id
