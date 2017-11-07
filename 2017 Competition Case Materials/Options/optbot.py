@@ -3,7 +3,7 @@ import time
 import mibian
 
 t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
-
+SPREAD = 0.05
 spot = 100
 puts = {}
 calls = {}
@@ -41,12 +41,20 @@ def f(msg, order):
         print 'TIIIICK', ticker
     else:
         print 'WEEEEEEIRD'
+
     # do we still want to keep all the old puts/calls?
     print puts, calls
     print 'SPOOOT', spot
     vals()
 
     cancelOrders(order)
+
+    if 'ask_price' in msg['market_state'] and 'bid_price' in msg['market_state']:
+        price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
+
+        mid = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
+        if abs(mid - min(msg['market_state']['asks'], key=int)) * 1.0 / mid >= SPREAD:
+            #makeMarket(ticker, val, direction, mid, order)
 
 def vals():
     time_left = 450 - (time.time() - start)
@@ -67,6 +75,17 @@ def vals():
         print vols[put]
         put_greeks[put] = (val.putDelta, val.vega, val.gamma)
 
+def makeMarket(ticker, val, direction, mid, order):
+    if direction == 'P':
+        delta = put_greeks[val][0]
+    else:
+        delta = call_greeks[val][0]
+    if delta > 0:
+        # make a put offer if delta favors calls
+        makeTrade(ticker[:-1] + 'P', True, 5, int(mid * 0.95), order)
+    else:
+        makeTrade(ticker[:-1] + 'C', True, 5, int(mid * 1.05), order)
+
 def cancelOrders(order):
         global order_id
         global info
@@ -86,8 +105,6 @@ def h(msg, order):
         if 'orders' in msg:
                 for k in msg['orders']:
                         order_id.append(k['order_id'])
-                        #print('iiddd')
-                        #print(k['order_id'])
                         info.append(k['ticker'])
 
 t.onMarketUpdate = f
