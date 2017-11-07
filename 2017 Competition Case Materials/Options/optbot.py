@@ -8,7 +8,8 @@ spot = 100
 puts = {}
 calls = {}
 vols = {}
-greeks = {}
+put_greeks = {}
+call_greeks = {}
 start = time.time()
 
 order_id = []
@@ -57,14 +58,14 @@ def vals():
         prev = val.impliedVolatility
         print vols[call]
         # greeks
-        greeks[call] = (val.callDelta, val.vega, val.gamma)
+        call_greeks[call] = (val.callDelta, val.vega, val.gamma)
     prev = None
     for put in puts:
         val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put], volatility = prev )
         vols[put] = val.impliedVolatility
         prev = val.impliedVolatility
         print vols[put]
-        greeks[put] = (val.putDelta, val.vega, val.gamma)
+        put_greeks[put] = (val.putDelta, val.vega, val.gamma)
 
 def cancelOrders(order):
         global order_id
