@@ -56,7 +56,7 @@ def f(msg, order):
         price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
 
         mid = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
-        if abs(mid - min(msg['market_state']['asks'], key=int)) * 1.0 / mid >= SPREAD:
+        #if abs(mid - min(msg['market_state']['asks'], key=int)) * 1.0 / mid >= SPREAD:
             #makeMarket(ticker, val, direction, mid, order)
 
 def vals():
@@ -112,44 +112,47 @@ def h(msg, order):
 
 
 def smileTrade(order):
-    #global put_greeks
-    global call_greeks
-    global spot
     index = 80
     difference = 1000
-    ll = []
-    for k in call_greeks:
-        ll.append(k)
-    ll = sorted(ll)
-    for i in range(len(ll)):
-        diff = abs(spot - call_greeks[ll[i]][0])
+    call_ll = sorted(list(call_greeks))
+    put_ll = sorted(list(put_greeks))
+    for i in range(len(call_ll)):
+        diff = abs(spot - call_greeks[call_ll[i]][0])
         if diff < difference:
                 index = i
                 difference = diff
     print('eeeereirjeijriejrieji')
     print call_greeks
     print 'doodoooododoo'
-    for i in range(index, len(ll) - 1):
+    for i in range(index, len(call_ll) - 1):
         print i
         #if the volatility
-        print call_greeks[ll[i]][0]
-        if ( call_greeks[ll[i+1]][0] < call_greeks[ll[i]][0]):
-            ticker = "T"+str(ll[i+1])+"C"
+        print call_greeks[call_ll[i]][0]
+        if ( call_greeks[call_ll[i+1]][0] < call_greeks[call_ll[i]][0]):
+            ticker = "T"+str(call_ll[i+1])+"C"
             print('iiiiiiiiiin')
             print ticker
-            makeTrade(ticker, True, 1, calls[ll[i+1]]*1.05, order)
-    for i in range(index, 1):
+            makeTrade(ticker, True, 1, calls[call_ll[i+1]]*1.05, order)
+
+    index = 80
+    difference = 1000
+    print put_ll
+    for i in range(len(put_ll)):
+        print put_greeks[put_ll[i]]
+        diff = abs(spot - put_greeks[put_ll[i]][0])
+        if diff < difference:
+                index = i
+                difference = diff
+    for i in range(min(len(put_ll) - 1, index), 1, -1):
         print i
         #if the volatility
-        print call_greeks[ll[i]][0]
-        if ( call_greeks[ll[i-1]][0] < call_greeks[ll[i]][0]):
-            ticker = "T"+str(ll[i-1])+"C"
+        print put_greeks[put_ll[i]][0]
+        if ( put_greeks[put_ll[i-1]][0] > put_greeks[put_ll[i]][0]):
+            ticker = "T"+str(put_ll[i-1])+"P"
             print('iiiiiiiiiin')
             print ticker
-            makeTrade(ticker, True, 1, calls[ll[i-1]]*1.05, order)
+            makeTrade(ticker, True, 1, puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
-    for i in range(len(ll)):
-        print ll[i]
 
 
 def makeTrade(ticker, isBuy, quantity, price, order):
