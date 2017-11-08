@@ -19,6 +19,7 @@ info = []
 history = {} # ticker : [isBuy, quantity, price]
 
 def f(msg, order):
+    print 'f'
     global spot
     print msg
     for k in msg:
@@ -50,6 +51,7 @@ def f(msg, order):
     vals()
 
     smileTrade(order)
+    print('frown')
     #cancelOrders(order)
 
     if 'ask_price' in msg['market_state'] and 'bid_price' in msg['market_state']:
@@ -105,13 +107,14 @@ def cancelOrders(order):
         info = []
 
 def h(msg, order):
-        if 'orders' in msg:
-                for k in msg['orders']:
-                        order_id.append(k['order_id'])
-                        info.append(k['ticker'])
+    print 'h'
+    if 'orders' in msg:
+            for k in msg['orders']:
+                    order_id.append(k['order_id'])
+                    info.append(k['ticker'])
 
 def i(msg, order):
-
+    print 'i'
     status = msg['trader_state']['positions']
     delta, vega = calcNetDeltaVega(status)
     for ticker in calls:
@@ -139,11 +142,14 @@ def i(msg, order):
 def calcNetDeltaVega(positions):
     net_delta = 0
     net_vega = 0
+    # print(positions)
+    # print(put_greeks)
+    # print(call_greeks)
     for ticker in positions:
-        if ticker[-1] == 'P':
+        if ticker[-1] == 'P' and ticker[1:-1] in put_greeks:
             net_delta += put_greeks[ticker[1:-1]][1]
             net_vega += put_greeks[ticker[1:-1]][2]
-        else:
+        elif ticker[1:-1] in call_greeks:
             net_delta += call_greeks[ticker[1:-1]][1]
             net_vega += call_greeks[ticker[1:-1]][2]
     return net_delta, net_vega
