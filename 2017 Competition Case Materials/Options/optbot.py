@@ -13,6 +13,8 @@ put_greeks = {}
 call_greeks = {}
 start = time.time()
 
+threshold = 0
+
 order_id = []
 info = []
 
@@ -61,6 +63,8 @@ def f(msg, order):
         #if abs(mid - min(msg['market_state']['asks'], key=int)) * 1.0 / mid >= SPREAD:
             #makeMarket(ticker, val, direction, mid, order)
 
+    print 'frownnnn'
+
 def vals():
     time_left = 450 - (time.time() - start)
     prev = None
@@ -108,10 +112,12 @@ def cancelOrders(order):
 
 def h(msg, order):
     print 'h'
+    global threshold
     if 'orders' in msg:
             for k in msg['orders']:
                     order_id.append(k['order_id'])
                     info.append(k['ticker'])
+                    threshold -= 1
 
 def i(msg, order):
     print 'i'
@@ -146,10 +152,11 @@ def calcNetDeltaVega(positions):
     # print(put_greeks)
     # print(call_greeks)
     for ticker in positions:
-        if ticker[-1] == 'P' and ticker[1:-1] in put_greeks:
+        if ticker[-1] == 'P' and ticker[1:-1] in put_greeks and put_greeks[ticker[1:-1]][1] != None:
             net_delta += put_greeks[ticker[1:-1]][1]
             net_vega += put_greeks[ticker[1:-1]][2]
-        elif ticker[1:-1] in call_greeks:
+        elif ticker[-1] == 'C' and ticker[1:-1] in call_greeks and call_greeks[ticker[1:-1]][1] != None:
+            print call_greeks[ticker[1:-1]]
             net_delta += call_greeks[ticker[1:-1]][1]
             net_vega += call_greeks[ticker[1:-1]][2]
     return net_delta, net_vega
@@ -175,7 +182,8 @@ def smileTrade(order):
             ticker = "T"+str(call_ll[i+1])+"C"
             print('iiiiiiiiiin')
             print ticker
-            makeTrade(ticker, True, 1, calls[call_ll[i+1]]*1.05, order)
+            print (calls[call_ll[i+1]]*1.05)
+            #makeTrade(ticker, True, 1, calls[call_ll[i+1]]*1.05, order)
 
     index = 80
     difference = 1000
@@ -194,15 +202,19 @@ def smileTrade(order):
             ticker = "T"+str(put_ll[i-1])+"P"
             print('iiiiiiiiiin')
             print ticker
+            print (puts[put_ll[i-1]]*0.95)
             makeTrade(ticker, True, 1, puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
 
 
 def makeTrade(ticker, isBuy, quantity, price, order):
+    global threshold
+    if threshold < 10:
         if ticker not in history:
                 history[ticker] = []
         history[ticker].append([isBuy, quantity, price])
         order.addTrade(ticker, isBuy, quantity, price)
+        threshold += 1
 
 
 t.onMarketUpdate = f
