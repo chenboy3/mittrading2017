@@ -128,7 +128,7 @@ def i(msg, order):
             if delta > 0:
                 makeTrade('T' + ticker + 'C', False, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
             else:
-                makeTrade('T' + ticker + 'C', True, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
+               makeTrade('T' + ticker + 'C', True, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
             break
 
     '''
@@ -203,7 +203,9 @@ def smileTrade(order):
             print('iiiiiiiiiin')
             print ticker
             print (puts[put_ll[i-1]]*0.95)
-            makeTrade(ticker, True, 1, puts[put_ll[i-1]]*0.95, order)
+            price = round(put_ll[i-1]*1.05,2) 
+            makeTrade(ticker, True, 1, price, order) 
+                    #puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
 
 
@@ -219,6 +221,6 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 
 t.onMarketUpdate = f
 #t.onTrade = g
-t.onAckModifyOrders = h
-t.onTraderUpdate = i
+#t.onAckModifyOrders = h
+#t.onTraderUpdate = i
 t.run()
