@@ -11,6 +11,9 @@ history = {}
 last = 0.0
 order_id = []
 info = []
+pdelta = {}
+cdelta = {} 
+delta = 0.0
 def f(msg, order):
     global last
     state =  msg['market_state']
@@ -39,43 +42,20 @@ def f(msg, order):
             m = (b + a) / 2
             tick = "T"+str(c)+"C"
             if (a - b) / m > 0.05:
-                makeTrade(tick, True, 1, b + 0.01, order)
-                makeTrade(tick, False, 1, a - 0.01, order)
-'''
+                makeTrade(tick, True, 5, b + 0.01, order)
+                makeTrade(tick, False, 5, a - 0.01, order)
 def vals():
     time_left = 450 - (time.time() - start)
     total_volatility, vol_count = 0, 0
-    for call in calls:
-        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call],
-            volatility = None if vol_count == 0 else total_volatility / vol_count)
-        vols[call] = val.impliedVolatility
-        # not sure if this is the correct way to calculate implied volatility
-        total_volatility += val.impliedVolatility
-        vol_count += 1
-        print vols[call]
-        # greeks
-        call_greeks[call] = (val.impliedVolatility, val.callDelta, val.vega, val.gamma)
-    total_volatility, vol_count = 0, 0
-    for put in puts:
-        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put],
-            volatility = None if vol_count == 0 else total_volatility / vol_count )
-        vols[put] = val.impliedVolatility
-        total_volatility += val.impliedVolatility
-        vol_count += 1
-        print vols[put]
-        put_greeks[put] = (val.impliedVolatility, val.putDelta, val.vega, val.gamma)
+    sspot = spot[0] + spot[1] / 2
+    for cal in call:
+        val = mibian.BS([sspot, cal, 0, time_left/15.0], callPrice = call[cal][0] + call[cal][1] / 2)
+        cdelta[call] = val.delta
 
-def makeMarket(ticker, val, direction, mid, order):
-    if direction == 'P':
-        delta = put_greeks[val][0]
-    else:
-        delta = call_greeks[val][0]
-    if delta > 0:
-        # make a put offer if delta favors calls
-        makeTrade(ticker[:-1] + 'P', True, 5, int(mid * 0.95), order)
-    else:
-        makeTrade(ticker[:-1] + 'C', True, 5, int(mid * 1.05), order)
-'''
+    for pu in put:
+        val = mibian.BS([sspot, pu, 0, time_left/15.0], putPrice = put[pu][0] + put[pu][1] / 2)
+        pdelta[pu] = val.delta
+
 def cancelOrders(order):
         global order_id
         global info
