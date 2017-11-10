@@ -6,6 +6,7 @@ import math
 t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
 SPREAD = 0.05
 spot = 100
+TRADE_LIMIT = 20
 puts = {}
 calls = {}
 vols = {}
@@ -14,6 +15,7 @@ call_greeks = {}
 start = time.time()
 
 threshold = 0
+
 
 order_id = []
 info = []
@@ -67,20 +69,24 @@ def f(msg, order):
 
 def vals():
     time_left = 450 - (time.time() - start)
-    prev = None
+    total_volatility, vol_count = 0, 0
     for call in calls:
-        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call], volatility = prev)
+        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call],
+            volatility = None if vol_count == 0 else total_volatility / vol_count)
         vols[call] = val.impliedVolatility
         # not sure if this is the correct way to calculate implied volatility
-        prev = val.impliedVolatility
+        total_volatility += val.impliedVolatility
+        vol_count += 1
         print vols[call]
         # greeks
         call_greeks[call] = (val.impliedVolatility, val.callDelta, val.vega, val.gamma)
-    prev = None
+    total_volatility, vol_count = 0, 0
     for put in puts:
-        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put], volatility = prev )
+        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put],
+            volatility = None if vol_count == 0 else total_volatility / vol_count )
         vols[put] = val.impliedVolatility
-        prev = val.impliedVolatility
+        total_volatility += val.impliedVolatility
+        vol_count += 1
         print vols[put]
         put_greeks[put] = (val.impliedVolatility, val.putDelta, val.vega, val.gamma)
 
@@ -124,7 +130,7 @@ def i(msg, order):
     status = msg['trader_state']['positions']
     delta, vega = calcNetDeltaVega(status)
     for ticker in calls:
-        if call_greeks[ticker][1] <= abs(delta):
+        if call_greeks[ticker][1] != None and call_greeks[ticker][1] <= abs(delta):
             if delta > 0:
                 makeTrade('T' + ticker + 'C', False, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
             else:
@@ -183,7 +189,8 @@ def smileTrade(order):
             print('iiiiiiiiiin')
             print ticker
             print (calls[call_ll[i+1]]*1.05)
-            #makeTrade(ticker, True, 1, calls[call_ll[i+1]]*1.05, order)
+            price = round(calls[call_ll[i+1]]*1.05, 2)
+            makeTrade(ticker, True, 1, price, order)
 
     index = 80
     difference = 1000
@@ -203,15 +210,15 @@ def smileTrade(order):
             print('iiiiiiiiiin')
             print ticker
             print (puts[put_ll[i-1]]*0.95)
-            price = round(put_ll[i-1]*1.05,2) 
-            makeTrade(ticker, True, 1, price, order) 
+            price = round(puts[put_ll[i-1]]*1.05,2)
+            makeTrade(ticker, True, 1, price, order)
                     #puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
 
 
 def makeTrade(ticker, isBuy, quantity, price, order):
     global threshold
-    if threshold < 10:
+    if threshold < TRADE_LIMIT:
         if ticker not in history:
                 history[ticker] = []
         history[ticker].append([isBuy, quantity, price])
@@ -221,6 +228,6 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 
 t.onMarketUpdate = f
 #t.onTrade = g
-#t.onAckModifyOrders = h
-#t.onTraderUpdate = i
+t.onAckModifyOrders = h
+t.onTraderUpdate = i
 t.run()
