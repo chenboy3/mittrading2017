@@ -95,8 +95,6 @@ def cancelOrders(order):
                 print('done')
         order_id = []
         info = []
-'''
-'''
 def h(msg, order):
     print 'h'
     #global threshold
@@ -191,13 +189,12 @@ def smileTrade(order):
                     #puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
 '''
-
 def makeTrade(ticker, isBuy, quantity, price, order):
     if ticker not in history:
             history[ticker] = []
     history[ticker].append([isBuy, quantity, price])
     order.addTrade(ticker, isBuy, quantity, price)
-
+'''
 t.onMarketUpdate = f
 #t.onTrade = g
 t.onAckModifyOrders = h
