@@ -10,6 +10,7 @@ spot = (100.0, 100.0)
 history = {}
 last = 0.0
 def f(msg, order):
+    global last
     state =  msg['market_state']
     ticker = state['ticker']
     direction = ticker[-1]
