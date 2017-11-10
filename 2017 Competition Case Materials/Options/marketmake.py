@@ -4,69 +4,41 @@ import mibian
 import math
 
 t = tt.TradersBot(host='127.0.0.1', id='trader0', password='trader0')
-SPREAD = 0.05
-spot = 100
-#TRADE_LIMIT = 20
-puts = {}
-calls = {}
-vols = {}
-put_greeks = {}
-call_greeks = {}
-start = time.time()
-
-threshold = 0
-
-
-order_id = []
-info = []
-
-history = {} # ticker : [isBuy, quantity, price]
-
+call = {}
+put = {}
+spot = (100.0, 100.0)
+history = {}
+last = 0.0
 def f(msg, order):
-    print 'f'
-    global spot
-    print msg
-    for k in msg:
-        print k
     state =  msg['market_state']
-    for s in state:
-        print s
     ticker = state['ticker']
     direction = ticker[-1]
     val = ticker[1:-1]
-    if 'ask_price' in msg['market_state'] and 'bid_price' in msg['market_state']:
-        price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
-    else:
-        price = msg['market_state']['last_price']
-    #this is a put
+    if len(state['bids'])==0 or len(state['asks'])==0:
+        return
+    bid = float((max(msg['market_state']['bids'], key=float)))
+    ask = float((min(msg['market_state']['asks'], key=float)))
     if direction == 'P':
-        puts[val] = price
+        put[val] = (bid, ask)
     elif direction == 'C':
-        calls[val] = price
+        call[val] = (bid, ask)
     elif ticker == 'TMXFUT':
-        spot = price
+        spot = (bid, ask)
         print 'TIIIICK', ticker
     else:
         print 'WEEEEEEIRD'
-
-    # do we still want to keep all the old puts/calls?
-    print puts, calls
-    print 'SPOOOT', spot
-    vals()
-
-    smileTrade(order)
-    print('frown')
-    #cancelOrders(order)
-
-    if 'ask_price' in msg['market_state'] and 'bid_price' in msg['market_state']:
-        price = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
-
-        mid = (max(msg['market_state']['bids'], key=int) + min(msg['market_state']['asks'], key=int)) / 2
-        #if abs(mid - min(msg['market_state']['asks'], key=int)) * 1.0 / mid >= SPREAD:
-            #makeMarket(ticker, val, direction, mid, order)
-
-    print 'frownnnn'
-
+    if (time.time() - last) > 1: 
+        last = time.time()
+        cancelOrders(order)
+        for c in call:
+            b = call[c][0]
+            a = call[c][1]
+            m = (b + a) / 2
+            tick = "T"+str(c)+"C"
+            if (a - b) / m > 0.05:
+                makeTrade(tick, True, 1, b + 0.01, order)
+                makeTrade(tick, False, 1, a - 0.01, order)
+'''
 def vals():
     time_left = 450 - (time.time() - start)
     total_volatility, vol_count = 0, 0
@@ -100,7 +72,7 @@ def makeMarket(ticker, val, direction, mid, order):
         makeTrade(ticker[:-1] + 'P', True, 5, int(mid * 0.95), order)
     else:
         makeTrade(ticker[:-1] + 'C', True, 5, int(mid * 1.05), order)
-
+'''
 def cancelOrders(order):
         global order_id
         global info
@@ -115,7 +87,7 @@ def cancelOrders(order):
                 print('done')
         order_id = []
         info = []
-
+'''
 def h(msg, order):
     print 'h'
     global threshold
@@ -137,19 +109,6 @@ def i(msg, order):
                makeTrade('T' + ticker + 'C', True, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
             break
 
-    '''
-    get net delta and vega from our positions
-
-    hedge delta and vega
-
-    find stocks to buy/sell such that delta/vega approach 0
-
-    delta of 100, stock has delta of 1
-
-    try to just do delta
-
-
-    '''
 
 def calcNetDeltaVega(positions):
     net_delta = 0
@@ -222,16 +181,13 @@ def smileTrade(order):
             makeTrade(ticker, True, 1, price, order)
                     #puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
-
+'''
 
 def makeTrade(ticker, isBuy, quantity, price, order):
-#    global threshold
-#    if threshold < TRADE_LIMIT:
     if ticker not in history:
             history[ticker] = []
     history[ticker].append([isBuy, quantity, price])
     order.addTrade(ticker, isBuy, quantity, price)
-#        threshold += 1
 
 t.onMarketUpdate = f
 #t.onTrade = g
