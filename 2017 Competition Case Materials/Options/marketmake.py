@@ -30,7 +30,7 @@ def f(msg, order):
         print 'TIIIICK', ticker
     else:
         print 'WEEEEEEIRD'
-    if (time.time() - last) > 1: 
+    if (time.time() - last) > 1:
         last = time.time()
         cancelOrders(order)
         for c in call:
@@ -41,6 +41,30 @@ def f(msg, order):
             if (a - b) / m > 0.05:
                 makeTrade(tick, True, 1, b + 0.01, order)
                 makeTrade(tick, False, 1, a - 0.01, order)
+    print "HEREEEE WE GO"
+    print "PUT"
+    print put
+    print "CALL"
+    print call
+    print "10 WIDEST MARKETS"
+    print getWidestMarkets(10, True, True)
+
+def getWidestMarkets(amt, puts, calls):
+    ls = []
+    if calls:
+        for ticker in call:
+            tup = call[ticker]
+            mid = (tup[0] + tup[1])/2
+            ls.append(('T' + ticker + 'C', (tup[1] - mid) * 1.0 / mid))
+    if puts:
+        for ticker in put:
+            tup = put[ticker]
+            mid = (tup[0] + tup[1])/2
+            ls.append(('T' + ticker + 'P', (tup[1] - mid) * 1.0 / mid))
+    ls = sorted(ls, key = lambda tup: tup[1])[::-1]
+    if len(ls) < amt:
+        return ls
+    return ls[:amt]
 '''
 def vals():
     time_left = 450 - (time.time() - start)
