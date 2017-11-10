@@ -69,24 +69,20 @@ def f(msg, order):
 
 def vals():
     time_left = 450 - (time.time() - start)
-    total_volatility, vol_count = 0, 0
+    prev = None
     for call in calls:
-        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call],
-            volatility = None if vol_count == 0 else total_volatility / vol_count)
+        val = mibian.BS([spot, call, 0, time_left/15.0], callPrice = calls[call], volatility = prev)
         vols[call] = val.impliedVolatility
         # not sure if this is the correct way to calculate implied volatility
-        total_volatility += val.impliedVolatility
-        vol_count += 1
+        prev = val.impliedVolatility
         print vols[call]
         # greeks
         call_greeks[call] = (val.impliedVolatility, val.callDelta, val.vega, val.gamma)
-    total_volatility, vol_count = 0, 0
+    prev = None
     for put in puts:
-        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put],
-            volatility = None if vol_count == 0 else total_volatility / vol_count )
+        val = mibian.BS([spot, put, 0, time_left/15.0], putPrice = puts[put], volatility = prev )
         vols[put] = val.impliedVolatility
-        total_volatility += val.impliedVolatility
-        vol_count += 1
+        prev = val.impliedVolatility
         print vols[put]
         put_greeks[put] = (val.impliedVolatility, val.putDelta, val.vega, val.gamma)
 
