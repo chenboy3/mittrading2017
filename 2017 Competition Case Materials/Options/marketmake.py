@@ -9,6 +9,8 @@ put = {}
 spot = (100.0, 100.0)
 history = {}
 last = 0.0
+order_id = []
+info = []
 def f(msg, order):
     global last
     state =  msg['market_state']
@@ -89,15 +91,16 @@ def cancelOrders(order):
         order_id = []
         info = []
 '''
+'''
 def h(msg, order):
     print 'h'
-    global threshold
+    #global threshold
     if 'orders' in msg:
             for k in msg['orders']:
                     order_id.append(k['order_id'])
                     info.append(k['ticker'])
-                    threshold -= 1
-
+    #                threshold -= 1
+'''
 def i(msg, order):
     print 'i'
     status = msg['trader_state']['positions']
@@ -192,6 +195,6 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 
 t.onMarketUpdate = f
 #t.onTrade = g
-#t.onAckModifyOrders = h
+t.onAckModifyOrders = h
 #t.onTraderUpdate = i
 t.run()
