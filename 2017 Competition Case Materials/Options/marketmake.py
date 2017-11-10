@@ -68,7 +68,6 @@ def getWidestMarkets(amt, puts, calls):
     if len(ls) < amt:
         return ls
     return ls[:amt]
-'''
 def vals():
     time_left = 450 - (time.time() - start)
     total_volatility, vol_count = 0, 0
@@ -189,12 +188,13 @@ def smileTrade(order):
                     #puts[put_ll[i-1]]*0.95, order)
     print 'dooooon'
 '''
+
 def makeTrade(ticker, isBuy, quantity, price, order):
     if ticker not in history:
             history[ticker] = []
     history[ticker].append([isBuy, quantity, price])
     order.addTrade(ticker, isBuy, quantity, price)
-'''
+
 t.onMarketUpdate = f
 #t.onTrade = g
 t.onAckModifyOrders = h
