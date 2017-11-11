@@ -47,23 +47,18 @@ def f(msg, order):
         for d in dark:
                 updateDark(d, prices, order)
         elapsed = time.time() - last
-        print elapsed
+        #print elapsed
         if time.time() - last_trade > 1:# and elapsed < 10:
-                print('trade')
+                #print('trade')
                 last_trade = time.time()
                 for d in dark:
                         price = prices[d[0:3]][d[3:6]]
                         if price > 0.01:
-                                print('buyz' ,d, price * .995)
-                                print('sellz',d, price * 1.005)
+                                #print('buyz' ,d, price * .995)
+                                #print('sellz',d, price * 1.005)
                                 #makeTrade(d, True, 10, price * .999 - .01 + 199, order)
-                                makeTrade(d, True, 1000, price * .92 - .01, order)
-                                makeTrade(d, False, 1000, price * 1.08 + .01, order)
-        if elapsed > 10:
-            print("LIQUIDATING")
-            #liquidateToUsd(order)
-            print("post liquidation")
-#            last = time.time()
+                                makeTrade(d, True, 1000, price * .92 - .01, order, time.time())
+                                makeTrade(d, False, 1000, price * 1.08 + .01, order, time.time())
 
         cancelOrders(order)
 
@@ -110,7 +105,7 @@ def updateDark(ticker, prices, order):
                                                 price = prices[c1][c2] * prices[d1][d2]
                                                 prices[a][b] = price
                                                 prices[b][a] = price
-                                                print ('yoticker: ',ticker,' price: ',price)
+                                                #print ('yoticker: ',ticker,' price: ',price)
                                                 '''if price > 0:
                                                         print('yo')
                                                         print(ticker, price * .99)
@@ -119,12 +114,12 @@ def updateDark(ticker, prices, order):
                                                         makeTrade(ticker, False, 100, price * 1.01, order)'''
 
 
-
-def printVals():
-        print('---------')
-        for v in vals:
-                for vv in vals:
-                        print(v, vv, prices[v][vv])
+#
+# def printVals():
+#         print('---------')
+#         for v in vals:
+#                 for vv in vals:
+#                         print(v, vv, prices[v][vv])
 
 
 def update(ticker, price):
@@ -134,58 +129,68 @@ def update(ticker, price):
         b = ticker[3:6]
         prices[a][b] = price
         prices[b][a] = price
-        print ('ticker: ',ticker,' price: ',price)
+        #print ('ticker: ',ticker,' price: ',price)
 
-
-def makeTrade(ticker, isBuy, quantity, price, order):
+lasty = 0
+count = 0
+def makeTrade(ticker, isBuy, quantity, price, order, time):
+        global lasty
+        global count
         if ticker not in history:
                 history[ticker] = []
         history[ticker].append([isBuy, quantity, price])
+        if time > lasty + 1:
+            print("TRADES MADE THIS SECOND")
+            print(count)
+            count = 0
+            lasty = time
+        else:
+            count += 1
         order.addTrade(ticker, isBuy, quantity, price)
 
 
 def cancelOrders(order):
         global order_id
         global info
-        print('cancellling')
-        print(len(order_id))
+        #print('cancellling')
+        #print(len(order_id))
         if (len(order_id) == 0):
-                print('zeo')
+                #print('zeo')
                 return
         for i in range(len(order_id)):
-                print('can')
+                #print('can')
                 order.addCancel(info[i], order_id[i])
-                print('done')
+                #print('done')
         order_id = []
         info = []
 
 def liquidateToUsd(order):
-        print('STAAAART')
-        print(portfolio)
+        #print('STAAAART')
+        #print(portfolio)
         # not working, maybe if something's negative
         if portfolio['EUR'] != 0.0:
             quantity = abs(int(portfolio['EUR'] * 1.0 / prices['EUR']['USD']))
             while quantity > 0:
-                print quantity, 'EUROOOOO'
-                makeTrade('EURUSD', portfolio['EUR'] < 0.0, min(1000, quantity), prices['EUR']['USD'], order)
+                #print quantity, 'EUROOOOO'
+                makeTrade('EURUSD', portfolio['EUR'] < 0.0, min(1000, quantity), prices['EUR']['USD'], order, time.time())
                 quantity -= min(1000, quantity)
         if portfolio['CAD'] != 0.0:
             quantity = abs(int(portfolio['CAD'] * 1.0 / prices['USD']['CAD']))
             while quantity > 0:
-                print quantity, 'CADOOOOO'
-                makeTrade('USDCAD', portfolio['CAD'] > 0.0, min(1000, quantity), prices['USD']['CAD'], order)
+                #print quantity, 'CADOOOOO'
+                makeTrade('USDCAD', portfolio['CAD'] > 0.0, min(1000, quantity), prices['USD']['CAD'], order, time.time())
                 quantity -= min(1000, quantity)
         if portfolio['CHF'] != 0.0:
             quantity = abs(int(portfolio['CHF'] * 1.0 / prices['USD']['CHF']))
             while quantity > 0:
-                makeTrade('USDCHF', portfolio['CHF'] > 0.0, min(1000, quantity), prices['USD']['CHF'], order)
+                makeTrade('USDCHF', portfolio['CHF'] > 0.0, min(1000, quantity), prices['USD']['CHF'], order, time.time())
                 quantity -= min(1000, quantity)
         if portfolio['JPY'] != 0.0:
             quantity = abs(int(portfolio['JPY'] * 1.0 / prices['USD']['JPY']))
             while quantity > 0:
-                makeTrade('USDJPY', portfolio['JPY'] > 0.0, min(1000, quantity), prices['USD']['JPY'], order)
+                makeTrade('USDJPY', portfolio['JPY'] > 0.0, min(1000, quantity), prices['USD']['JPY'], order, time.time())
                 quantity -= min(1000, quantity)
-        print('EEEENDDD')
+        #print('EEEENDDD')
 def h(msg, order):
         #print('heeeey')
         #print(msg['orders'])
@@ -199,17 +204,17 @@ def h(msg, order):
                         info.append(k['ticker'])
 
 def i(msg, order):
-    print('IIIIIIIIIIIIIII')
+    #print('IIIIIIIIIIIIIII')
     cancelOrders(order)
-    print(msg)
-    for k in msg:
-        print k
-    print(msg['trader_state'])
-    for k in msg['trader_state']:
-        print k
+    #print(msg)
+    #for k in msg:
+    #    print k
+    #print(msg['trader_state'])
+    #for k in msg['trader_state']:
+    #    print k
     state = msg['trader_state']
     for c in state['cash']:
-        print c
+    #    print c
         portfolio[c] = state['cash'][c]
     liquidateToUsd(order)
 t.onMarketUpdate = f

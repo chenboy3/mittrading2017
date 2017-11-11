@@ -74,8 +74,6 @@ def f(msg, order):
         if delta > -10 and delta < 10:
             # 11 - calls
             for tup in getWidestMarkets(11, True, False):
-                print('TUP')
-                print(tup)
                 b = put[tup[0][1:-1]][0]
                 a = put[tup[0][1:-1]][1]
                 m = (b + a) / 2
