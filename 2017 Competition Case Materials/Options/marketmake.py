@@ -43,8 +43,10 @@ def f(msg, order):
             m = (b + a) / 2
             tick = "T"+str(c)+"C"
             if (a - b) / m > 0.05:
-                makeTrade(tick, True, 5, b + 0.01, order)
-                makeTrade(tick, False, 5, a - 0.01, order)
+                if delta < 10:
+                    makeTrade(tick, True, 5, b + 0.01, order)
+                if delta > -10:
+                    makeTrade(tick, False, 5, a - 0.01, order)
     print "HEREEEE WE GO"
     print "PUT"
     print put
@@ -118,22 +120,23 @@ def i(msg, order):
     print 'i'
     status = msg['trader_state']['positions']
     print status
-    vals()
+    #vals()
     for key in status:
         print key[-1]
         print delta
         if key[-1] == "P":
-            print key[1:-1]
-            a = 0
-            if key[1:-1] in pdelta:
-                a = pdelta.get(key[1:-1])
+            #print key[1:-1]
+            #a = 0
+            #if key[1:-1] in pdelta:
+            #    a = pdelta.get(key[1:-1])
+            a = -1 
             delta += a * float(status[key])
         else:
-         if key[-1] == "P":
-            print key[1:-1]
-            a = 0
-            if key[1:-1] in pdelta:
-                a = cdelta.get(key[1:-1])
+            a = 1
+            #print key[1:-1]
+            #a = 0
+            #if key[1:-1] in pdelta:
+            #    a = cdelta.get(key[1:-1])
             delta += a * float(status[key])
             #delta += (cdelta.get([key[1:-1],0.0))*float(status[key])
     print 'DELELLLTA'
