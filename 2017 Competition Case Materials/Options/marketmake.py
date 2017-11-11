@@ -71,6 +71,31 @@ def f(msg, order):
                         makeTrade(tick, True, 5, b + 0.01, order, time.time())
                     if delta > -10:
                         makeTrade(tick, False, 5, a - 0.01, order, time.time())
+        if delta > -10 and delta < 10:
+            # 11 - calls
+            for tup in getWidestMarkets(11, True, False):
+                #print('TUP')
+                #print(tup)
+                b = put[tup[0][1:-1]][0]
+                a = put[tup[0][1:-1]][1]
+                m = (b + a) / 2
+                tick = tup[0]
+                if (a - b) / m > 0.05:
+                    makeTrade(tick, True, 5, b + 0.01, order, time.time())
+                    makeTrade(tick, False, 5, a - 0.01, order, time.time())
+        else:
+            # 2, figure out direction
+            for tup in getWidestMarkets(22, True, False):
+                b = put[tup[0][1:-1]][0]
+                a = put[tup[0][1:-1]][1]
+                m = (b + a) / 2
+                tick = tup[0]
+                if (a - b) / m > 0.05:
+                    if delta > 10:
+                        makeTrade(tick, True, 5, b + 0.01, order, time.time())
+                    if delta < -10:
+                        makeTrade(tick, False, 5, a - 0.01, order, time.time())
+
 
 def getWidestMarkets(amt, puts, calls):
     ls = []
