@@ -91,10 +91,10 @@ def f(msg, order):
                 m = (b + a) / 2
                 tick = tup[0]
                 if (a - b) / m > 0.05:
-                    if delta > 10:
-                        makeTrade(tick, True, 5, b + 0.01, order, time.time())
-                    if delta < -10:
-                        makeTrade(tick, False, 5, a - 0.01, order, time.time())
+                    if delta < 10:
+                        makeTrade(tick, False, 5, b + 0.01, order, time.time())
+                    if delta > -10:
+                        makeTrade(tick, True, 5, a - 0.01, order, time.time())
 
 
 def getWidestMarkets(amt, puts, calls):
