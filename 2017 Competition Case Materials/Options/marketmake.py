@@ -14,6 +14,7 @@ info = []
 pdelta = {}
 cdelta = {}
 delta = 0.0
+start = time.time()
 def f(msg, order):
     global last
     state =  msg['market_state']
@@ -73,12 +74,21 @@ def vals():
     total_volatility, vol_count = 0, 0
     sspot = spot[0] + spot[1] / 2
     for cal in call:
-        val = mibian.BS([sspot, cal, 0, time_left/15.0], callPrice = call[cal][0] + call[cal][1] / 2)
-        cdelta[call] = val.delta
+        print time_left
+        val = mibian.BS([sspot, cal, 0, time_left/15.0], callPrice = (call[cal][0] + call[cal][1]) / 2)
+        print "--------dasfs----"
+        print val.callDelta
+        print val.impliedVolatility
+        print sspot
+        print cal
+        print time_left/15.0
+        print (call[cal][0] + call[cal][1]) / 2
+
+        #cdelta[call] = val.callDelta
 
     for pu in put:
         val = mibian.BS([sspot, pu, 0, time_left/15.0], putPrice = put[pu][0] + put[pu][1] / 2)
-        pdelta[pu] = val.delta
+        #pdelta[pu] = val.putDelta
 
 def cancelOrders(order):
         global order_id
@@ -102,20 +112,33 @@ def h(msg, order):
                     order_id.append(k['order_id'])
                     info.append(k['ticker'])
     #                threshold -= 1
-'''
 def i(msg, order):
+    global delta
+    delta = 0
     print 'i'
     status = msg['trader_state']['positions']
-    delta, vega = calcNetDeltaVega(status)
-    for ticker in calls:
-        if call_greeks[ticker][1] != None and call_greeks[ticker][1] <= abs(delta):
-            if delta > 0:
-                makeTrade('T' + ticker + 'C', False, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
-            else:
-               makeTrade('T' + ticker + 'C', True, abs(delta/call_greeks[ticker][1]), 1.05 * calls[ticker], order)
-            break
-
-
+    print status
+    vals()
+    for key in status:
+        print key[-1]
+        print delta
+        if key[-1] == "P":
+            print key[1:-1]
+            a = 0
+            if key[1:-1] in pdelta:
+                a = pdelta.get(key[1:-1])
+            delta += a * float(status[key])
+        else:
+         if key[-1] == "P":
+            print key[1:-1]
+            a = 0
+            if key[1:-1] in pdelta:
+                a = cdelta.get(key[1:-1])
+            delta += a * float(status[key])
+            #delta += (cdelta.get([key[1:-1],0.0))*float(status[key])
+    print 'DELELLLTA'
+    print delta
+'''
 def calcNetDeltaVega(positions):
     net_delta = 0
     net_vega = 0
@@ -198,5 +221,5 @@ def makeTrade(ticker, isBuy, quantity, price, order):
 t.onMarketUpdate = f
 #t.onTrade = g
 t.onAckModifyOrders = h
-#t.onTraderUpdate = i
+t.onTraderUpdate = i
 t.run()
