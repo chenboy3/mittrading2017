@@ -31,29 +31,46 @@ def f(msg, order):
         call[val] = (bid, ask)
     elif ticker == 'TMXFUT':
         spot = (bid, ask)
-        print 'TIIIICK', ticker
-    else:
-        print 'WEEEEEEIRD'
+        #print 'TIIIICK', ticker
     if (time.time() - last) > 1:
         last = time.time()
         cancelOrders(order)
-        for c in call:
-            b = call[c][0]
-            a = call[c][1]
-            m = (b + a) / 2
-            tick = "T"+str(c)+"C"
-            if (a - b) / m > 0.05:
-                if delta < 10:
-                    makeTrade(tick, True, 5, b + 0.01, order)
-                if delta > -10:
-                    makeTrade(tick, False, 5, a - 0.01, order)
-    print "HEREEEE WE GO"
-    print "PUT"
-    print put
-    print "CALL"
-    print call
-    print "10 WIDEST MARKETS"
-    print getWidestMarkets(10, True, True)
+        # for c in call:
+        #     b = call[c][0]
+        #     a = call[c][1]
+        #     m = (b + a) / 2
+        #     tick = "T"+str(c)+"C"
+        #     if (a - b) / m > 0.05:
+        #         if delta < 10:
+        #             makeTrade(tick, True, 5, b + 0.01, order)
+        #         if delta > -10:
+        #             makeTrade(tick, False, 5, a - 0.01, order)
+
+        # 22
+        if delta > -10 and delta < 10:
+            # 11 - calls
+            for tup in getWidestMarkets(11, False, True):
+                #print('TUP')
+                #print(tup)
+                b = call[tup[0][1:-1]][0]
+                a = call[tup[0][1:-1]][1]
+                m = (b + a) / 2
+                tick = tup[0]
+                if (a - b) / m > 0.05:
+                    makeTrade(tick, True, 5, b + 0.01, order, time.time())
+                    makeTrade(tick, False, 5, a - 0.01, order, time.time())
+        else:
+            # 2, figure out direction
+            for tup in getWidestMarkets(22, False, True):
+                b = call[tup[0][1:-1]][0]
+                a = call[tup[0][1:-1]][1]
+                m = (b + a) / 2
+                tick = tup[0]
+                if (a - b) / m > 0.05:
+                    if delta < 10:
+                        makeTrade(tick, True, 5, b + 0.01, order, time.time())
+                    if delta > -10:
+                        makeTrade(tick, False, 5, a - 0.01, order, time.time())
 
 def getWidestMarkets(amt, puts, calls):
     ls = []
@@ -71,20 +88,21 @@ def getWidestMarkets(amt, puts, calls):
     if len(ls) < amt:
         return ls
     return ls[:amt]
+
 def vals():
     time_left = 450 - (time.time() - start)
     total_volatility, vol_count = 0, 0
     sspot = spot[0] + spot[1] / 2
     for cal in call:
-        print time_left
+        #print time_left
         val = mibian.BS([sspot, cal, 0, time_left/15.0], callPrice = (call[cal][0] + call[cal][1]) / 2)
-        print "--------dasfs----"
-        print val.callDelta
-        print val.impliedVolatility
-        print sspot
-        print cal
-        print time_left/15.0
-        print (call[cal][0] + call[cal][1]) / 2
+        #print "--------dasfs----"
+        #print val.callDelta
+        #print val.impliedVolatility
+        #print sspot
+        #print cal
+        #print time_left/15.0
+        #print (call[cal][0] + call[cal][1]) / 2
 
         #cdelta[call] = val.callDelta
 
@@ -95,19 +113,19 @@ def vals():
 def cancelOrders(order):
         global order_id
         global info
-        print('cancellling')
-        print(len(order_id))
+        #print('cancellling')
+        #print(len(order_id))
         if (len(order_id) == 0):
                 print('zeo')
                 return
         for i in range(len(order_id)):
-                print('can')
+                #print('can')
                 order.addCancel(info[i], order_id[i])
-                print('done')
+                #print('done')
         order_id = []
         info = []
 def h(msg, order):
-    print 'h'
+    #print 'h'
     #global threshold
     if 'orders' in msg:
             for k in msg['orders']:
@@ -117,19 +135,19 @@ def h(msg, order):
 def i(msg, order):
     global delta
     delta = 0
-    print 'i'
+    #print 'i'
     status = msg['trader_state']['positions']
-    print status
+    #print status
     #vals()
     for key in status:
-        print key[-1]
-        print delta
+        #print key[-1]
+        #print delta
         if key[-1] == "P":
             #print key[1:-1]
             #a = 0
             #if key[1:-1] in pdelta:
             #    a = pdelta.get(key[1:-1])
-            a = -1 
+            a = -1
             delta += a * float(status[key])
         else:
             a = 1
@@ -139,86 +157,24 @@ def i(msg, order):
             #    a = cdelta.get(key[1:-1])
             delta += a * float(status[key])
             #delta += (cdelta.get([key[1:-1],0.0))*float(status[key])
-    print 'DELELLLTA'
-    print delta
-'''
-def calcNetDeltaVega(positions):
-    net_delta = 0
-    net_vega = 0
-    # print(positions)
-    # print(put_greeks)
-    # print(call_greeks)
-    for ticker in positions:
-        if ticker[-1] == 'P' and ticker[1:-1] in put_greeks and put_greeks[ticker[1:-1]][1] != None:
-            net_delta += put_greeks[ticker[1:-1]][1]
-            net_vega += put_greeks[ticker[1:-1]][2]
-        elif ticker[-1] == 'C' and ticker[1:-1] in call_greeks and call_greeks[ticker[1:-1]][1] != None:
-            print call_greeks[ticker[1:-1]]
-            net_delta += call_greeks[ticker[1:-1]][1]
-            net_vega += call_greeks[ticker[1:-1]][2]
-    return net_delta, net_vega
+    #print 'DELELLLTA'
+    #print delta
 
-def smileTrade(order):
-    index = 1000
-    difference = 1000
-    call_ll = sorted(list(call_greeks))
-    put_ll = sorted(list(put_greeks))
-    for i in range(len(call_ll)):
-        diff = abs(spot - call_greeks[call_ll[i]][0])
-        if diff < difference:
-                index = i
-                difference = diff
-    print('eeeereirjeijriejrieji')
-    print call_greeks
-    print 'doodoooododoo'
-    if index == 1000:
-        return
-    mean = call_greeks[call_ll[index]][0]
-    for i in range(index, len(call_ll) - 1):
-        print i
-        mean = mean * 0.2 + 0.8 * call_greeks[call_ll[i]][0]
-        #if the volatility
-        print call_greeks[call_ll[i]][0]
-        if ( call_greeks[call_ll[i+1]][0] < mean ):
-            ticker = "T"+str(call_ll[i+1])+"C"
-            print('iiiiiiiiiin')
-            print ticker
-            print (calls[call_ll[i+1]]*1.05)
-            price = round(calls[call_ll[i+1]]*1.05, 2)
-            makeTrade(ticker, True, 1, price, order)
-
-    index = 1000
-    difference = 1000
-    if index == 1000:
-        return
-    print put_ll
-    for i in range(len(put_ll)):
-        print put_greeks[put_ll[i]]
-        diff = abs(spot - put_greeks[put_ll[i]][0])
-        if diff < difference:
-                index = i
-                difference = diff
-    mean = put_greeks[put_ll[index]][0]
-    for i in range(min(len(put_ll) - 1, index), 1, -1):
-        print i
-        mean = mean * 0.2 + 0.8 * put_greeks[put_ll[i]][0]
-        #if the volatility
-        print put_greeks[put_ll[i]][0]
-        if ( put_greeks[put_ll[i-1]][0] > mean):
-            ticker = "T"+str(put_ll[i-1])+"P"
-            print('pppppiiiiiiiiiin')
-            print ticker
-            print (puts[put_ll[i-1]]*0.95)
-            price = round(puts[put_ll[i-1]]*1.05,2)
-            makeTrade(ticker, True, 1, price, order)
-                    #puts[put_ll[i-1]]*0.95, order)
-    print 'dooooon'
-'''
-
-def makeTrade(ticker, isBuy, quantity, price, order):
+lasty = 0
+count = 0
+def makeTrade(ticker, isBuy, quantity, price, order, time):
+    global lasty
+    global count
     if ticker not in history:
             history[ticker] = []
     history[ticker].append([isBuy, quantity, price])
+    if time > lasty + 1:
+        print("TRADES MADE THIS SECOND")
+        print(count)
+        count = 0
+        lasty = time
+    else:
+        count += 1
     order.addTrade(ticker, isBuy, quantity, price)
 
 t.onMarketUpdate = f
